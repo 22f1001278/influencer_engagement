@@ -2,11 +2,14 @@
 <!-- link between  layout.html and index.html-->
 {% extends './layouts/layout.html' %}
 
+{% block title %}
+  <title>Home</title>
+{% endblock %}
+
+
 {% block body %}
-<body>
+
   {% include './components/navbar.html' %}
   <h3>Welcome to the home page</h3>
-
-</body>
 
 {% endblock %}

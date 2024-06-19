@@ -1,6 +1,13 @@
 
 <nav>
     <ul>
+        {% if nav_type == '' %}
+        <li><a href="#">Home</a></li>
+        <li><a href="/registration">Sign-up</a></li>
+        <li><a href="/login">Login</a></li>
+        {% endif %}
+        
+        
         {% if nav_type == 'Admin' %}
         <li><a href="#">{{ nav_type }}'s Dashboard</a></li>
         <li><a href="#">Info</a></li>

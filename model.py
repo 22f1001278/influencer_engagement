@@ -12,4 +12,4 @@ class User(db.Model):
     password = db.Column(db.String, nullable = False)
     isAdmin = db.Column(db.Boolean, default = False)
     isInfluencer = db.Column(db.Boolean, default = False)
-    isSponser = db.Column(db.Boolean, default = False)
+    isSponsor = db.Column(db.Boolean, default = False)

@@ -85,5 +85,5 @@ form{
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
-    width: 50%; /* Adjust width as needed */
+    width: 50%; 
 }

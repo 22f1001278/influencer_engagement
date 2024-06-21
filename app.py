@@ -12,6 +12,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ief_db.sqlite3'
 
 ## set the secret key
 app.config['SECRET_KEY'] = '12345'
+app.config['PERMENANT_SESSION_LIFETIME'] = timedelta(minutes=5)
 
 ## initialize the app with model
 db.init_app(app)             ## connection between app and model
@@ -30,7 +31,8 @@ def index():
 @app.route("/registration",methods = ['GET','POST'])
 def registration():
     if request.method == 'GET':
-        return render_template('registration.html')
+        current_user = 'user1'
+        return render_template('registration.html', nav_type = user_type[current_user])
     
     if request.method == 'POST':
         email = request.form.get('email') 
@@ -63,10 +65,14 @@ def registration():
 def login():
     if request.method == 'POST':
         current_user = 'user1'
-        return render_template('login.html', nav_type = user_type[current_user])
+        return render_template('index.html', nav_type = user_type[current_user])
     elif request.method == 'GET':
         current_user = 'user1'
-        return render_template('login.html', nav_type = user_type[current_user])
+        return render_template('index.html', nav_type = user_type[current_user])
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    return render_template('index.html')
 
 
 

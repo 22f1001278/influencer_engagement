@@ -1,7 +1,17 @@
 {% extends './layouts/layout.html' %}
 
+
+{% block title %}
+    <title>Registration</title>
+{% endblock %}
+
+
 {% block body %}
+    {% include './components/navbar.html' %}
+
     {% include './components/registration.html' %}
-</form>
+    
+    {% include './components/flash.html' %}
+
 {% endblock %}
 

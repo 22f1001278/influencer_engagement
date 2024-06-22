@@ -1,38 +1,38 @@
 
 <nav>
     <ul>
+    
+        {% if nav_type.role == 'admin' %}
+        <li><a href="#">{{ nav_type.email }}'s Dashboard</a></li>
+        <li><a href="#">Info</a></li>
+        <li><a href="#">Find</a></li>
+        <li><a href="#">Stats</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        {% endif %}
+
+        {% if nav_type.role == 'influencer' %}
+        <li><a href="#">{{ nav_type.email }}'s Dashboard</a></li>
+        <li><a href="#">Profile</a></li>
+        <li><a href="#">Find</a></li>
+        <li><a href="#">Stats</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        {% endif %}
+
+
+        {% if nav_type.role == 'sponsor' %}
+        <li><a href="#">{{ nav_type.email }}'s Dashboard</a></li>
+        <li><a href="#">Profile</a></li>
+        <li><a href="#">Campaigns</a></li>
+        <li><a href="#">Find</a></li>
+        <li><a href="#">Stats</a></li>
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        {% endif %}
+
         {% if nav_type == '' %}
         <li><a href="#">Home</a></li>
         <li><a href="/registration">Sign-up</a></li>
         <li><a href="/login">Login</a></li>
         {% endif %}
         
-        
-        {% if nav_type == 'Admin' %}
-        <li><a href="#">{{ nav_type }}'s Dashboard</a></li>
-        <li><a href="#">Info</a></li>
-        <li><a href="#">Find</a></li>
-        <li><a href="#">Stats</a></li>
-        <li><a href="#">Logout</a></li>
-        {% endif %}
-
-        {% if nav_type == 'Influencer' %}
-        <li><a href="#">{{ nav_type }}'s Dashboard</a></li>
-        <li><a href="#">Profile</a></li>
-        <li><a href="#">Find</a></li>
-        <li><a href="#">Stats</a></li>
-        <li><a href="#">Logout</a></li>
-        {% endif %}
-
-
-        {% if nav_type == 'Sponsor' %}
-        <li><a href="#">{{ nav_type }}'s Dashboard</a></li>
-        <li><a href="#">Profile</a></li>
-        <li><a href="#">Campaigns</a></li>
-        <li><a href="#">Find</a></li>
-        <li><a href="#">Stats</a></li>
-        <li><a href="#">Logout</a></li>
-        {% endif %}
-
     </ul>
 </nav>

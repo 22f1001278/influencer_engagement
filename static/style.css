@@ -4,9 +4,13 @@
 }
 
 body{
+    padding: 0;
+    margin: 0;
+    font-family: 'Lato', sans-serif;
+    color: #000;
     min-height: 100vh;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }
+
 
 nav{
     background-color: azure;
@@ -86,4 +90,36 @@ form{
     transform: translateX(-50%);
     z-index: 1000;
     width: 50%; 
+}
+
+
+.influencer-profile .card {
+    border-radius: 10px;
+}
+
+
+.influencer-profile .card .card-header .profile_img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    margin: 10px auto;
+    border: 10px solid #ccc;
+    border-radius: 50%;
+}
+
+.influencer-profile .card h3 {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.influencer-profile .card p {
+    font-size: 16px;
+    color: #000;
+}
+
+.influencer-profile .table th,
+.influencer-profile .table td {
+    font-size: 14px;
+    padding: 5px 10px;
+    color: #000;
 }

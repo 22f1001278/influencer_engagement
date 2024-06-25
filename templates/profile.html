@@ -2,13 +2,16 @@
 
 
 {% block title %}
-    <title>Login</title>
+    <title>Profile</title>
 {% endblock %}
 
 
 {% block body %}
     {% include './components/navbar.html' %}
     {% include './components/flash.html' %}
-    {% include './components/login.html' %}
+
+    {% include './components/influencer/profile.html' %}
+    
+    
 
 {% endblock %}

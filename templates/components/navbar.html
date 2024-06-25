@@ -2,7 +2,7 @@
 <nav>
     <ul>
     
-        {% if nav_type.role == 'admin' %}
+        {% if nav_type.isAdmin == 1 %}
         <li><a href="{{ url_for('index') }}">{{ nav_type.email }}'s Dashboard</a></li>
         <li><a href="#">Info</a></li>
         <li><a href="#">Find</a></li>
@@ -10,16 +10,16 @@
         <li><a href="{{ url_for('logout') }}">Logout</a></li>
         {% endif %}
 
-        {% if nav_type.role == 'influencer' %}
+        {% if nav_type.isInfluencer == 1 %}
         <li><a href="{{ url_for('index') }}">{{ nav_type.email }}'s Dashboard</a></li>
-        <li><a href="#">Profile</a></li>
+        <li><a href="{{ url_for('profile') }}">Profile</a></li>
         <li><a href="#">Find</a></li>
         <li><a href="#">Stats</a></li>
         <li><a href="{{ url_for('logout') }}">Logout</a></li>
         {% endif %}
 
 
-        {% if nav_type.role == 'sponsor' %}
+        {% if nav_type.isSponsor == 1 %}
         <li><a href="{{ url_for('index') }}">{{ nav_type.email }}'s Dashboard</a></li>
         <li><a href="#">Profile</a></li>
         <li><a href="#">Campaigns</a></li>
@@ -28,7 +28,7 @@
         <li><a href="{{ url_for('logout') }}">Logout</a></li>
         {% endif %}
 
-        {% if nav_type.role == '' %}
+        {% if (nav_type.isSponsor == 0) and (nav_type.isInfluencer == 0) and (nav_type.isAdmin == 0)%}
         <li><a href="{{ url_for('index') }}">Home</a></li>
 
         <li><a href="/registration">Sign-up</a></li>

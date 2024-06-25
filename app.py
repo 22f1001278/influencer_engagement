@@ -2,7 +2,7 @@
 from flask import Flask, render_template, url_for, request, redirect, flash, session
 from datetime import timedelta
 from model import db, User
-from helper import getUserInfo, user_needed
+from helper import getUserInfo
 
 
 ## object of flask

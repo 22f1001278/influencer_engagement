@@ -2,7 +2,7 @@
 from flask import Flask, render_template, url_for, request, redirect, flash, session
 from datetime import timedelta
 from model import db, User
-from helper import getUserInfo
+from helper import getUserInfo, user_needed
 
 
 ## object of flask
@@ -20,8 +20,8 @@ db.init_app(app)             ## connection between app and model
 app.app_context().push()      ## enables operation
 db.create_all()                ## creates the schema
 
-
 @app.route("/")
+# @user_needed
 def index():
     current_user = getUserInfo() ## will return email and role
     return render_template('index.html', nav_type = current_user)

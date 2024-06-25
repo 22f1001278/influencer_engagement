@@ -1,5 +1,6 @@
-from flask import session
+from flask import session, redirect, url_for
 from model import User
+from functools import wraps
 
 
 def getUserInfo():
@@ -17,3 +18,15 @@ def getUserInfo():
     
     else:
         return {'role':''}
+    
+
+
+# def user_needed(f):
+#     @wraps(f) ## changes the name of the function returned to the name of the function passed
+#     def decorated_function(*args, **kwargs):
+#         user = getUserInfo()
+#         if user['role'] not in ['isInfluencer', 'isSponsor', 'isAdmin']:
+#             flash('user only','danger')
+#             return redirect(url_for('logout'))
+#         return f(*args, **kwargs)
+#     return decorated_function

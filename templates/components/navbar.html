@@ -13,7 +13,7 @@
         {% if nav_type.isInfluencer == 1 %}
         <li><a href="{{ url_for('index') }}">{{ nav_type.email }}'s Dashboard</a></li>
         <li><a href="{{ url_for('profile') }}">Profile</a></li>
-        <li><a href="#">Find</a></li>
+        <li><a href="{{ url_for('findSponsor') }}">Find</a></li>
         <li><a href="#">Stats</a></li>
         <li><a href="{{ url_for('logout') }}">Logout</a></li>
         {% endif %}

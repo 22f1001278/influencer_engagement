@@ -120,5 +120,20 @@ def profile():
     
     return render_template('profile.html', nav_type=user)
 
+@app.route('/findSponsor',methods =['GET','POST'])
+@influencerNeeded()
+def findSponsor():
+    user = getUserInfo()
+    ## check the authorization
+    if 'id' not in session:
+        return redirect(url_for('login'))
+    
+    id = session['id']
+    user = User.query.filter_by(id=id).first()
+    if user is None or not user.isInfluencer:
+        return redirect(url_for('login'))
+    
+    return render_template('findSponsor.html', nav_type=user)
+
 if __name__ == "__main__": 
     app.run(host='0.0.0.0',debug =True)

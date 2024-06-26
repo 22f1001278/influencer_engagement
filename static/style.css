@@ -6,7 +6,7 @@
 body{
     padding: 0;
     margin: 0;
-    font-family: 'Lato', sans-serif;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     color: #000;
     min-height: 100vh;
 }
@@ -93,17 +93,23 @@ form{
 }
 
 
+.influencer-profile{
+    margin: 30px auto ;
+}
+
+/* Influencer profile cards*/
 .influencer-profile .card {
-    border-radius: 10px;
+    border-radius: 25px;
+    border-color: silver;
+    margin: auto;
 }
 
 
-.influencer-profile .card .card-header .profile_img {
-    width: 150px;
-    height: 150px;
+.influencer-profile .card .card-header .display-pic {
+    width: 200px;
+    height: 200px;
+    margin: 30px auto;
     object-fit: cover;
-    margin: 10px auto;
-    border: 10px solid #ccc;
     border-radius: 50%;
 }
 
@@ -119,7 +125,15 @@ form{
 
 .influencer-profile .table th,
 .influencer-profile .table td {
-    font-size: 14px;
+    font-size: 15px;
     padding: 5px 10px;
     color: #000;
 }
+
+.custom-border {
+    border: 2px solid transparent;
+    border-image-slice: 1;
+}
+
+
+

@@ -1,0 +1,44 @@
+<div class="container lg-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>Campaigns</h2>
+            <hr>
+        </div>
+    </div>
+    
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <input type="text" class="form-control" placeholder="Search for campaigns..." id="search-bar">
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-secondary w-100">Filter</button>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for campaign in campaigns %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ campaign.title }}</h5>
+                    <p>{{ campaign.description }}</p>
+                    <p>Budget: ${{ campaign.budget }}</p>
+                    <p>Start Date: {{ campaign.start_date }}</p>
+                    <p>End Date: {{ campaign.end_date }}</p>
+                    <a href="{{ url_for('campaignManagement', campaign_id=campaign.campaign_id) }}">
+                        <button class="btn btn-primary">View</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="{{ url_for('createCampaign') }}">
+                <button class="btn btn-warning" style="font-size: 24px; border-radius: 50%;">+</button>
+            </a>
+        </div>
+    </div>
+</div>

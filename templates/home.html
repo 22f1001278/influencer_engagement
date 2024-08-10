@@ -1,9 +1,8 @@
-
 <!-- link between  layout.html and index.html-->
 {% extends './layouts/layout.html' %}
 
 {% block title %}
-  <title>Index</title>
+  <title>Home</title>
 {% endblock %}
 
 
@@ -13,12 +12,5 @@
   {% include './components/flash.html' %}
   <h3>Welcome to the home page</h3>
   {{ nav_type }}
-
-
-  <p>
-    If you are new here, <a href="{{ url_for('registration') }}">click here to register</a>.
-    <br>
-    Already have an account? <a href="{{ url_for('login') }}">Click here to log in</a>.
-  </p>
 
 {% endblock %}

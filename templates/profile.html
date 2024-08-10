@@ -10,8 +10,10 @@
     {% include './components/navbar.html' %}
     {% include './components/flash.html' %}
 
-    {% include './components/influencer/profile.html' %}
-    
-    
+    {% if nav_type.isInfluencer %}
+        {% include './components/influencer/profile.html' %}
+    {% elif nav_type.isSponsor %}
+        {% include './components/sponsor/profile.html' %}
+    {% endif %}
 
 {% endblock %}

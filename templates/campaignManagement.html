@@ -1,0 +1,12 @@
+{% extends './layouts/layout.html' %}
+
+{% block title %}
+    <title>Manage Campaign</title>
+{% endblock %}
+
+{% block body %}
+    {% include './components/navbar.html' %}
+    {% include './components/flash.html' %}
+
+    {% include './components/sponsor/campaignManagement.html' %}
+{% endblock %}

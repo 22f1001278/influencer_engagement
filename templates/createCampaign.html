@@ -1,0 +1,18 @@
+<!-- link between  layout.html and index.html-->
+{% extends './layouts/layout.html' %}
+
+{% block title %}
+  <title>Create A New Campaign</title>
+{% endblock %}
+
+
+{% block body %}
+
+  {% include './components/navbar.html' %}
+  {% include './components/flash.html' %}
+  {{ nav_type }}
+
+  {% include './components/sponsor/createCampaign.html' %}
+
+
+{% endblock %}

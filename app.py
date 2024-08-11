@@ -4,6 +4,11 @@ from datetime import timedelta
 from model import db, User, Influencer, Campaign, Request, Sponsor, BlacklistRequest
 from helper import getUserInfo
 from datetime import datetime
+import matplotlib.pyplot as plt
+import io
+import base64
+import plotly.express as px
+
 
 
 ## object of flask
@@ -65,13 +70,21 @@ def home_page():
         total_influencers = User.query.filter_by(isInfluencer=True).count()
         total_sponsors = User.query.filter_by(isSponsor=True).count()
 
+        fig = px.bar(
+            x=['Influencers', 'Sponsors'], 
+            y=[total_influencers, total_sponsors], 
+            labels={'x':'User Type', 'y':'Count'},
+            title='Total Influencers vs Sponsors'
+        )
 
+        # Convert Plotly figure to HTML div string
+        plot_html = fig.to_html(full_html=False)
 
         return render_template('home.html', nav_type=nav_type, 
                                total_users=total_users, 
                                total_campaigns=total_campaigns, 
                                active_campaigns=active_campaigns, 
-                               flagged_users=flagged_users)
+                               flagged_users=flagged_users, img_data=plot_html)
     return render_template('home.html', nav_type=nav_type)
 
 @app.route("/registration",methods = ['POST','GET'])

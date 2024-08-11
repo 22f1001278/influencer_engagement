@@ -31,7 +31,8 @@ class Influencer(db.Model):
     rating = db.Column(db.Float, default=50.0)
     user = db.relationship('User', backref=db.backref('influencer', uselist=False))
 
-    def __init__(self, category, rating):
+    def __init__(self,influencer_id, category, rating):
+        self.influencer_id = influencer_id
         self.category = category
         self.rating = rating
 
@@ -41,7 +42,8 @@ class Sponsor(db.Model):
     industry = db.Column(db.String, nullable=True)
     user = db.relationship('User', backref=db.backref('sponsor', uselist=False))
 
-    def __init__(self, industry):
+    def __init__(self,sponsor_id, industry):
+        self.sponsor_id = sponsor_id
         self.industry = industry
 
 class Campaign(db.Model):
@@ -66,28 +68,25 @@ class Campaign(db.Model):
 
 
 class Request(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    request_id = db.Column(db.Integer, primary_key=True)
     campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.campaign_id'), nullable=False)
     influencer_id = db.Column(db.Integer, db.ForeignKey('influencer.influencer_id'), nullable=False)
-    title = db.Column(db.String, nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    budget = db.Column(db.Numeric(10, 2), nullable=False)
-    status = db.Column(db.String, nullable=False)
+    
+    initiated_by_influencer = db.Column(db.Boolean, nullable=False)  # True if influencer initiated, False if sponsor initiated
+    
+    # Track approval status from both sides
+    influencer_approved = db.Column(db.Boolean, nullable=True)  # None means pending, True means approved, False means rejected
+    sponsor_approved = db.Column(db.Boolean, nullable=True)  # None means pending, True means approved, False means rejected
+    
+    status = db.Column(db.String, nullable=False, default='Pending')  # Status could be 'Pending', 'Approved', 'Rejected'
+
     campaign = db.relationship('Campaign', backref=db.backref('requests', lazy=True))
     influencer = db.relationship('Influencer', backref=db.backref('requests', lazy=True))
-
-    def __init__(self, campaign_id, influencer_id, title, description, budget, status):
-        self.campaign_id = campaign_id
-        self.influencer_id = influencer_id
-        self.title = title
-        self.description = description
-        self.budget = budget
-        self.status = status
+    __table_args__ = (db.UniqueConstraint('campaign_id', 'influencer_id', name='unique_camp_inf_req'),)
 
 
-influencer_campaign_association = db.Table('influencer_campaign_association',
-    db.Column('influencer_id', db.Integer, db.ForeignKey('influencer.influencer_id'), primary_key=True),
-    db.Column('campaign_id', db.Integer, db.ForeignKey('campaign.campaign_id'), primary_key=True)
-)
 
- 
+
+
+## references
+ #https://stackoverflow.com/questions/10059345/sqlalchemy-unique-across-multiple-columns

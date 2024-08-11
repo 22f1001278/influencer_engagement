@@ -1,87 +1,127 @@
 <div style="height: 30px"></div>
 
-<div class="Sponsor-profile">
+<div class="sponsor-profile">
     <div class="container">
-      <div class="row">
-        <div class="col-lg-4">
-          <div class="card shadow-sm">
-            <div class="card-header bg-transparent text-center">
-              <img class="display-pic" src="#" alt="{{ nav_type.email }}'s dp">
-              <h3>{{ nav_type.email }}</h3>
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-transparent text-center">
+                        <img class="display-pic" src="#" alt="{{ nav_type.email }}'s dp">
+                        <h3>{{ nav_type.email }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <table>
+                            <tr>
+                                <th width="50%">Sponsor ID</th>
+                                <td width="2%">:</td>
+                                <td width="2%"></td>
+                                <td>{{ nav_type.sponsor.sponsor_id }}</td>
+                            </tr>
+                            <tr>
+                                <th width="50%">Industry</th>
+                                <td width="2%">:</td>
+                                <td width="2%"></td>
+                                <td>{{ nav_type.sponsor.industry }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <table>
-                    <tr>
-                      <th width="50%">Sponsor ID</th>
-                      <td width="2%">:</td>
-                      <td width="2%"></td>
-                      <td>123456</td>
-                    </tr>
-                    <tr>
-                        <th width="50%">#</th>
-                        <td width="2%">:</td>
-                        <td width="2%"></td>
-                        <td>60%</td>
-                    </tr>
-                    <tr>
-                        <th width="50%">#</th>
-                        <td width="2%">:</td>
-                        <td width="2%"></td>
-                        <td>$9000</td>
-                      </tr>
-                </table>
+
+            <div class="col-lg-8">
+                <!-- Active Campaigns Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h3 class="mb-0">Active Campaigns</h3>
+                    </div>
+                    <div class="card-body pt-0">
+                        <table class="table table-bordered">
+                            {% for campaign in active_campaigns %}
+                            <tr>
+                                <th width="35%">{{ campaign.title }}</th>
+                                <td><a href="{{ url_for('campaignManagement', campaign_id=campaign.campaign_id) }}" class="btn btn-warning">Manage</a></td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Past Campaigns Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h3 class="mb-0">Past Campaigns</h3>
+                    </div>
+                    <div class="card-body pt-0">
+                        <table class="table table-bordered">
+                            {% for campaign in past_campaigns %}
+                            <tr>
+                                <th width="35%">{{ campaign.title }}</th>
+                                <td><a href="{{ url_for('campaignManagement', campaign_id=campaign.campaign_id) }}" class="btn btn-info">View Details</a></td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+
+                <!-- New Requests Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h3 class="mb-0">New Requests from Influencers</h3>
+                    </div>
+                    <div class="card-body pt-0">
+                        <table class="table table-bordered">
+                            {% for request in new_requests %}
+                            <tr>
+                                <th width="70%">{{ request.campaign.title }}</th>
+                                <td>
+                                    <form method="POST" action="{{ url_for('approveRequest', request_id=request.request_id) }}" style="display: inline-block;">
+                                        <button type="submit" class="btn btn-success">Approve</button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('rejectRequest', request_id=request.request_id) }}" style="display: inline-block;">
+                                        <button type="submit" class="btn btn-danger">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pending Requests Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h3 class="mb-0">Pending Requests Made by You</h3>
+                    </div>
+                    <div class="card-body pt-0">
+                        <table class="table table-bordered">
+                            {% for request in pending_requests %}
+                            <tr>
+                                <th width="70%">{{ request.campaign.title }}</th>
+                                <td><span class="text-warning">Pending Influencer Approval</span></td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Rejected Requests Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h3 class="mb-0">Rejected Requests</h3>
+                    </div>
+                    <div class="card-body pt-0">
+                        <table class="table table-bordered">
+                            {% for request in rejected_requests %}
+                            <tr>
+                                <th width="70%">{{ request.campaign.title }}</th>
+                                <td><span class="text-danger">Rejected by Influencer</span></td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
 
             </div>
-          </div>
         </div>
-
-
-        <div class="col-lg-8">
-          <div class="card shadow-sm">
-            <div class="card-header bg-transparent border-0">
-              <h3 class="mb-0">Active Campaigns</h3>
-            </div>
-            <div class="card-body pt-0">
-              <table class="table table-bordered">
-                <tr>
-                  <th width="35%">Campaign 1 </th>
-                  <th width="35%">Progress </th>
-                  <td><a href="{{ url_for('viewActiveCampaigns') }}">
-                      <button class = "btn btn-warning"> View </button>
-                  </a>></td>
-                </tr>
-                <tr>
-                  <th width="35%">Campaign 2</th>
-                  <th width="35%">Progress </th>
-                  <td>#</td>
-                </tr>
-              </table>
-            </div>
-            </div>
-
-            <div style="height: 30px"></div>
-
-            <div class="card shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                  <h3 class="mb-0">New Requests</h3>
-                </div>
-                <div class="card-body pt-0">
-                  <table class="table table-bordered">
-                    <tr>
-                      <th width="70%">Request 1</th>
-                      <td>#</td>
-                    </tr>
-                    <tr>
-                      <th width="70%">Request 2</th>
-                      <td>#</td>
-                    </tr>
-                  </table>
-                </div>
-                </div>
-
-            <div style="height: 50px"></div>
-
-        </div>
-      </div>
     </div>
-  </div>
+</div>

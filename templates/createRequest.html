@@ -1,0 +1,14 @@
+{% extends './layouts/layout.html' %}
+
+{% block title %}
+    <title>Create Request for {{ campaign.title }}</title>
+{% endblock %}
+
+{% block body %}
+    {% include './components/navbar.html' %}
+    {% include './components/flash.html' %}
+    {{ nav_type }}
+    {{ influencers }}
+    {% include './components/sponsor/createRequest.html' %}
+    
+{% endblock %}

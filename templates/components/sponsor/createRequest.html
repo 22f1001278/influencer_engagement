@@ -1,0 +1,44 @@
+<div class="container lg-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>Create Request for {{ campaign.title }}</h2>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <input type="text" class="form-control" placeholder="Search for campaigns..." id="search-bar">
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-secondary w-100">Filter</button>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for influencer in influencers %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ influencer.user.name }}</h5>
+                    <p>Category: {{ influencer.category }}</p>
+                    <p>Rating: {{ influencer.rating }}</p>
+                    <!-- Request Button -->
+                    {% if influencer in requested_influencers %}
+                        <!-- Request Already Made -->
+                        <button class="btn btn-secondary" disabled>Already Requested</button>
+                    {% else %}
+                        <!-- Request Button -->
+                        <form method="POST" action="{{ url_for('createRequest', campaign_id=campaign.campaign_id) }}">
+                            <input type="hidden" name="influencer_id" value="{{ influencer.influencer_id }}">
+                            <button type="submit" class="btn btn-success">Request</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+</div>

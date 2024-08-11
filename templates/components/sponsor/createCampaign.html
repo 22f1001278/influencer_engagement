@@ -3,26 +3,39 @@
     <hr>
     
     <form method="POST">
+        <div class="cmpManage">
+            <label for="title" >Campaign Title</label>
+            <input type="text" style="margin-left: 80px;" id="title" name="title" required>
+       
+        <div class="cmpManage">
+            <label for="description" >Campaign Description</label>
+            <textarea  id="description" style="margin-left: 30px;" name="description" rows="4" required></textarea>
+        
+        <div class="cmpManage">
+            <label for="budget" >Budget</label>
+            <input type="number" style="margin-left: 138px;" id="budget" name="budget" required>
+        
+        <div class="cmpManage">
+            <label for="start_date" >Start Date</label>
+            <input type="date" style="margin-left: 117px;"  id="start_date" name="start_date" required>
+        
+        <div class="cmpManage">
+            <label for="end_date" >End Date</label>
+            <input type="date" style="margin-left: 122px;"  id="end_date" name="end_date" required>
+       
+
         <div class="mb-3">
-            <label for="title" class="form-label">Campaign Title</label>
-            <input type="text" class="form-control" id="title" name="title" required>
+            <label for="niche" class="form-label">Campaign Niche</label>
+            <select class="form-control" id="niche" name="niche" required>
+                <option value="">Select a Niche</option>
+                <option value="technology">Technology</option>
+                <option value="fashion">Fashion</option>
+                <option value="health">Health</option>
+                <option value="education">Education</option>
+                <option value="entertainment">Entertainment</option>                
+            </select>
         </div>
-        <div class="mb-3">
-            <label for="description" class="form-label">Campaign Description</label>
-            <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
-        </div>
-        <div class="mb-3">
-            <label for="budget" class="form-label">Budget</label>
-            <input type="number" class="form-control" id="budget" name="budget" required>
-        </div>
-        <div class="mb-3">
-            <label for="start_date" class="form-label">Start Date</label>
-            <input type="date" class="form-control" id="start_date" name="start_date" required>
-        </div>
-        <div class="mb-3">
-            <label for="end_date" class="form-label">End Date</label>
-            <input type="date" class="form-control" id="end_date" name="end_date" required>
-        </div>
+
         <button type="submit" class="btn btn-primary">Create Campaign</button>
     </form>
 </div>

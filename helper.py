@@ -12,42 +12,9 @@ def getUserInfo():
             isAdmin = current_user.isAdmin
             isInfluencer = current_user.isInfluencer
             isSponsor = current_user.isSponsor
-            return {'usr_id':usr_id, 'email':email, 'isAdmin':isAdmin, 'isInfluencer':isInfluencer, 'isSponsor':isSponsor}
+            isBlacklist = current_user.isBlacklist
+            return {'usr_id':usr_id, 'email':email, 'isAdmin':isAdmin, 'isInfluencer':isInfluencer, 'isSponsor':isSponsor,'isBlacklist':isBlacklist}
         else:
             return None
         
 
-def influencerNeeded():
-    def wrapper(f):
-        @wraps(f)
-        def decorator(*args, **kwargs):
-            user = getUserInfo()
-            if user is None or 'isInfluencer' not in user or user['isInfluencer'] != 1:
-                flash('Influencer only','danger')
-                return redirect(url_for('logout'))
-            return f(*args, **kwargs) 
-        return decorator
-    return wrapper
-
-def sponsorNeeded():
-    def wrapper(f):
-        @wraps(f)
-        def decorator(*args, **kwargs):
-            user = getUserInfo()
-            if not user['isSponsor']:
-                flash('Sponsor only','danger')
-                return redirect(url_for('logout'))
-        return decorator
-    return wrapper
-
-
-def adminNeeded():
-    def wrapper(f):
-        @wraps(f)
-        def decorator(*args, **kwargs):
-            user = getUserInfo()
-            if user['isAdmin'] != 1:
-                flash('Admin only','danger')
-                return redirect(url_for('logout'))
-        return decorator
-    return wrapper

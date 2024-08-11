@@ -17,11 +17,8 @@ class User(db.Model):
     # isFlag = db.Column(db.Boolean, default = False)
     # influencer_id = db.Column(db.Integer, db.ForeignKey('influencer.id'), nullable=True)
 
-    def __init__(self, email, password, isInfluencer, isSponsor):
-        self.email = email
-        self.password = password
-        self.isInfluencer = isInfluencer
-        self.isSponsor = isSponsor
+    influencer = db.relationship('Influencer', back_populates='user', cascade="all, delete-orphan", uselist=False)
+    sponsor = db.relationship('Sponsor', back_populates='user', cascade="all, delete-orphan", uselist=False)
 
 
 class Influencer(db.Model):
@@ -29,22 +26,21 @@ class Influencer(db.Model):
     ## one to one relationship with user table   
     category = db.Column(db.String, nullable=True, default = '')
     rating = db.Column(db.Float, default=50.0)
-    user = db.relationship('User', backref=db.backref('influencer', uselist=False))
-
-    def __init__(self,influencer_id, category, rating):
-        self.influencer_id = influencer_id
-        self.category = category
-        self.rating = rating
+    
+    user = db.relationship('User', back_populates='influencer')
+    requests = db.relationship('Request', back_populates='influencer', cascade="all, delete-orphan")
+    blacklist_requests = db.relationship('BlacklistRequest', back_populates='influencer', cascade="all, delete-orphan")
 
 
 class Sponsor(db.Model):
     sponsor_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     industry = db.Column(db.String, nullable=True)
-    user = db.relationship('User', backref=db.backref('sponsor', uselist=False))
+    
+    user = db.relationship('User', back_populates='sponsor')
+    campaigns = db.relationship('Campaign', back_populates='sponsor', cascade="all, delete-orphan")
+    blacklist_requests = db.relationship('BlacklistRequest', back_populates='sponsor', cascade="all, delete-orphan")
 
-    def __init__(self,sponsor_id, industry):
-        self.sponsor_id = sponsor_id
-        self.industry = industry
+
 
 class Campaign(db.Model):
     campaign_id = db.Column(db.Integer, primary_key=True)
@@ -55,36 +51,36 @@ class Campaign(db.Model):
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
     status = db.Column(db.String, nullable=False)
-    sponsor = db.relationship('Sponsor', backref=db.backref('campaigns', lazy=True))
+    niche = db.Column(db.String, nullable=False)
+    isBlacklist = db.Column(db.Boolean, default=False)
 
-    def __init__(self, sponsor_id, title, description, budget, start_date, end_date, status):
-        self.sponsor_id = sponsor_id
-        self.title = title
-        self.description = description
-        self.budget = budget
-        self.start_date = start_date
-        self.end_date = end_date
-        self.status = status
+    sponsor = db.relationship('Sponsor', back_populates='campaigns')
+    requests = db.relationship('Request', back_populates='campaign', cascade="all, delete-orphan")
+
 
 
 class Request(db.Model):
     request_id = db.Column(db.Integer, primary_key=True)
     campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.campaign_id'), nullable=False)
     influencer_id = db.Column(db.Integer, db.ForeignKey('influencer.influencer_id'), nullable=False)
-    
     initiated_by_influencer = db.Column(db.Boolean, nullable=False)  # True if influencer initiated, False if sponsor initiated
-    
-    # Track approval status from both sides
     influencer_approved = db.Column(db.Boolean, nullable=True)  # None means pending, True means approved, False means rejected
     sponsor_approved = db.Column(db.Boolean, nullable=True)  # None means pending, True means approved, False means rejected
-    
     status = db.Column(db.String, nullable=False, default='Pending')  # Status could be 'Pending', 'Approved', 'Rejected'
 
-    campaign = db.relationship('Campaign', backref=db.backref('requests', lazy=True))
-    influencer = db.relationship('Influencer', backref=db.backref('requests', lazy=True))
+    campaign = db.relationship('Campaign', back_populates='requests')
+    influencer = db.relationship('Influencer', back_populates='requests')
     __table_args__ = (db.UniqueConstraint('campaign_id', 'influencer_id', name='unique_camp_inf_req'),)
 
 
+class BlacklistRequest(db.Model):
+    request_id = db.Column(db.Integer, primary_key=True)
+    influencer_id = db.Column(db.Integer, db.ForeignKey('influencer.influencer_id'), nullable=False)
+    sponsor_id = db.Column(db.Integer, db.ForeignKey('sponsor.sponsor_id'), nullable=False)
+    approved = db.Column(db.Boolean, default=None)  # None means pending, True means approved, False means rejected
+    
+    influencer = db.relationship('Influencer', back_populates='blacklist_requests')
+    sponsor = db.relationship('Sponsor', back_populates='blacklist_requests')
 
 
 

@@ -1,3 +1,5 @@
+<!-- {{ nav_type.sponsor.user.name == '' }} -->
+
 <div style="height: 30px"></div>
 
 <div class="sponsor-profile">
@@ -6,7 +8,7 @@
             <div class="col-lg-4">
                 <div class="card shadow-sm">
                     <div class="card-header bg-transparent text-center">
-                        <img class="display-pic" src="#" alt="{{ nav_type.email }}'s dp">
+                        <!-- <img class="display-pic" src="#" alt="{{ nav_type.email }}'s dp"> -->
                         <h3>{{ nav_type.email }}</h3>
                     </div>
                     <div class="card-body">
@@ -17,13 +19,39 @@
                                 <td width="2%"></td>
                                 <td>{{ nav_type.sponsor.sponsor_id }}</td>
                             </tr>
+                            
+                            <tr>
+                              <th width="50%">Name</th>
+                              <td width="2%">:</td>
+                              <td width="2%"></td>
+                              <td>{{ nav_type.sponsor.user.name }}</td>
+                          </tr>
+                            
                             <tr>
                                 <th width="50%">Industry</th>
                                 <td width="2%">:</td>
                                 <td width="2%"></td>
                                 <td>{{ nav_type.sponsor.industry }}</td>
                             </tr>
+                            <tr>
+                              <th width="50%">Total Spend</th>
+                              <td width="2%">:</td>
+                              <td width="2%"></td>
+                              <td>{{ total_spend }}</td>
+                          </tr>
                         </table>
+
+                        <form method="POST" style="display: inline;" {{ url_for('edit_sponsor_profile') }}">
+                          <div class="form-group">
+                              <label for="name">Name:</label>
+                              <input type="text" class="form-control" id="name" name="name" value="{{ nav_type.sponsor.user.name }}" required>
+                          </div>
+                          <div class="form-group">
+                              <label for="industry">Industry:</label>
+                              <input type="text" class="form-control" id="industry" name="industry" value="{{ nav_type.sponsor.industry }}" required>
+                          </div>
+                          <button type="submit" class="btn btn-primary">Update</button>
+                      </form>
                     </div>
                 </div>
             </div>
@@ -38,8 +66,10 @@
                         <table class="table table-bordered">
                             {% for campaign in active_campaigns %}
                             <tr>
-                                <th width="35%">{{ campaign.title }}</th>
-                                <td><a href="{{ url_for('campaignManagement', campaign_id=campaign.campaign_id) }}" class="btn btn-warning">Manage</a></td>
+                                <th width="20%">{{ campaign.title }}</th>
+                                <td width="20%">Total Influencers Approached: {{ campaign.requests|length }}</td>
+                                <td width="20%">Total Approved Influencers: {{ approved_influencers[campaign.campaign_id] }}</td>
+                                <td><a href="{{ url_for('campaignManagement', campaign_id=campaign.campaign_id) }}" class="btn btn-warning">Edit Campaign Details</a></td>
                             </tr>
                             {% endfor %}
                         </table>
@@ -74,10 +104,10 @@
                             <tr>
                                 <th width="70%">{{ request.campaign.title }}</th>
                                 <td>
-                                    <form method="POST" action="{{ url_for('approveRequest', request_id=request.request_id) }}" style="display: inline-block;">
+                                    <form method="POST" action="{{ url_for('approveRequest', request_id=request.request_id) }}" style="display: inline;">
                                         <button type="submit" class="btn btn-success">Approve</button>
                                     </form>
-                                    <form method="POST" action="{{ url_for('rejectRequest', request_id=request.request_id) }}" style="display: inline-block;">
+                                    <form method="POST" action="{{ url_for('rejectRequest', request_id=request.request_id) }}" style="display: inline;">
                                         <button type="submit" class="btn btn-danger">Reject</button>
                                     </form>
                                 </td>
@@ -96,7 +126,8 @@
                         <table class="table table-bordered">
                             {% for request in pending_requests %}
                             <tr>
-                                <th width="70%">{{ request.campaign.title }}</th>
+                                <th width="25%">{{ request.campaign.title }}</th>
+                                <td width="30%">{{ request.influencer.user.email }}</td>
                                 <td><span class="text-warning">Pending Influencer Approval</span></td>
                             </tr>
                             {% endfor %}

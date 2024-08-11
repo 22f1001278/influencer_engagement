@@ -4,9 +4,8 @@
     
         {% if nav_type.isAdmin == 1 %}
         <li><a href="{{ url_for('index') }}">{{ nav_type.email }}'s Dashboard</a></li>
-        <li><a href="#">Info</a></li>
-        <li><a href="#">Find</a></li>
-        <li><a href="#">Stats</a></li>
+        <li><a href="{{ url_for('adminManageUsers') }}">Manage User</a></li>
+        <li><a href="{{ url_for('adminManageCampaigns') }}">Manage Campaigns</a></li>
         <li><a href="{{ url_for('logout') }}">Logout</a></li>
         {% endif %}
 
@@ -14,7 +13,6 @@
         <li><a href="{{ url_for('index') }}">{{ nav_type.email }}'s Dashboard</a></li>
         <li><a href="{{ url_for('profile') }}">Profile</a></li>
         <li><a href="{{ url_for('findCampaigns') }}">Find</a></li>
-        <li><a href="#">Stats</a></li>
         <li><a href="{{ url_for('logout') }}">Logout</a></li>
         {% endif %}
 
@@ -23,14 +21,12 @@
         <li><a href="{{ url_for('index') }}">{{ nav_type.email }}'s Dashboard</a></li>
         <li><a href="{{ url_for('profile') }}">Profile</a></li>
         <li><a href="{{ url_for('campaigns') }}">Campaigns</a></li>
-        <li><a href="#">Find</a></li>
-        <li><a href="#">Stats</a></li>
+        <li><a href="{{ url_for('findInfluencer') }}">Find</a></li>
         <li><a href="{{ url_for('logout') }}">Logout</a></li>
         {% endif %}
 
         {% if (nav_type == None) %}
         <li><a href="{{ url_for('index') }}">Home</a></li>
-
         <li><a href="/registration">Sign-up</a></li>
         <li><a href="/login">Login</a></li>
         {% endif %}

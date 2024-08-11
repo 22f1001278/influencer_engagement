@@ -1,0 +1,27 @@
+<div class="container mt-4">
+    <h2>Available Influencers</h2>
+    <hr>
+
+    <div class="row">
+        {% for influencer in influencers %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ influencer.user.email }}</h5>
+                    <!-- <p>Category: {{ influencer.category }}</p> -->
+                    <p>Rating: {{ influencer.rating }}</p>
+
+                    <!-- Blacklist Request Button -->
+                    {% if not influencer.user.isBlacklist %}
+                    <form method="POST" style="display: inline;" action="{{ url_for('requestBlacklist', influencer_id=influencer.influencer_id) }}">
+                        <button type="submit" class="btn btn-danger">Request Blacklist</button>
+                    </form>
+                    {% else %}
+                    <p class="text-danger">Already Blacklisted</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

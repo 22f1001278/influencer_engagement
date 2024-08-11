@@ -7,10 +7,32 @@
 
 
 {% block body %}
-
   {% include './components/navbar.html' %}
   {% include './components/flash.html' %}
-  <h3>Welcome to the home page</h3>
-  {{ nav_type }}
+  <!-- {{ nav_type }} -->
 
+  {% if nav_type.isAdmin %}
+  {% include './components/admin/adminDashboard.html' %}
+
+  {% elif nav_type.isSponsor %}
+  <div class="container d-flex align-items-center justify-content-center" style="min-height: 50vh;">
+    <div class="text-center">
+      <h1>Welcome to EpicCollaborate</h1>
+      <p class="lead">Where Sponsors and Influencers Connect</p>
+      <p class="lead">Welcome {{ nav_type.email }}</p>
+  </div>
+
+  {% elif nav_type.isInfluencer %}
+
+  <div class="container d-flex align-items-center justify-content-center" style="min-height: 50vh;">
+    <div class="text-center">
+      <h1>Welcome to EpicCollaborate</h1>
+      <p class="lead">Where Sponsors and Influencers Connect</p>
+      <p class="lead">Welcome {{ nav_type.email }}</p>
+    </div>
+ 
+  {% else %}
+    <h3 style="text-align: center; margin-top: 20px;">Welcome to the home page</h3>
+  {% endif %}
+  
 {% endblock %}

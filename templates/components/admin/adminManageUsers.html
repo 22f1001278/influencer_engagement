@@ -1,0 +1,40 @@
+<div class="container mt-4">
+    <h2>Manage Users</h2>
+    <hr>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Blacklisted</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.email }}</td>
+                <td>{{ 'Admin' if user.isAdmin else 'Influencer' if user.isInfluencer else 'Sponsor' }}</td>
+                <td>{{ 'Yes' if user.isBlacklist else 'No' }}</td>
+                <td>
+                    {% if not user.isAdmin %}
+                        {% if user.isBlacklist %}
+                            <form method="POST" action="{{ url_for('whiteListUser', user_id=user.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-success">Whitelist</button>
+                            </form>
+                        {% else %}
+                            <form method="POST" action="{{ url_for('blacklistUser', user_id=user.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-warning">Blacklist</button>
+                            </form>
+                        {% endif %}
+                    <form method="POST" action="{{ url_for('deleteUser', user_id=user.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

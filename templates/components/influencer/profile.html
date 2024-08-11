@@ -6,11 +6,17 @@
             <div class="col-lg-4">
                 <div class="card shadow-sm">
                     <div class="card-header bg-transparent text-center">
-                        <img class="display-pic" src="#" alt="{{ nav_type.email }}'s dp">
+                        <!-- <img class="display-pic" src="#" alt="{{ nav_type.email }}'s dp"> -->
                         <h3>{{ nav_type.email }}</h3>
                     </div>
                     <div class="card-body">
                         <table>
+                          <tr>
+                            <th width="50%">Name</th>
+                            <td width="2%">:</td>
+                            <td width="2%"></td>
+                            <td>{{ nav_type.influencer.user.name }}</td>
+                          </tr>
                             <tr>
                                 <th width="50%">Influencer ID</th>
                                 <td width="2%">:</td>
@@ -24,12 +30,29 @@
                                 <td>{{ nav_type.influencer.rating }}%</td>
                             </tr>
                             <tr>
-                                <th width="50%">Earnings</th>
+                                <th width="50%">Total Earnings</th>
                                 <td width="2%">:</td>
                                 <td width="2%"></td>
-                                <td>$9000</td> <!-- Placeholder; replace with actual earnings logic -->
+                                <td>$ {{ total_earnings }}</td> 
                             </tr>
+                            <tr>
+                              <th width="50%">Category</th>
+                              <td width="2%">:</td>
+                              <td width="2%"></td>
+                              <td>{{ nav_type.influencer.category }}</td> 
+                          </tr>
                         </table>
+                        <form method="POST" style="display: inline;" action="{{ url_for('edit_influencer_profile') }}">
+                          <div class="form-group">
+                              <label for="name">Name:</label>
+                              <input type="text" class="form-control" id="name" name="name" value="{{ nav_type.influencer.user.name }}" required>
+                          </div>
+                          <div class="form-group">
+                              <label for="category">Category:</label>
+                              <input type="text" class="form-control" id="category" name="category" value="{{ nav_type.influencer.category }}" required>
+                          </div>
+                          <button type="submit" class="btn btn-primary">Update Profile</button>
+                      </form>
                     </div>
                 </div>
             </div>
@@ -45,7 +68,8 @@
                             {% for request in approved_requests %}
                             <tr>
                                 <th width="35%">{{ request.campaign.title }}</th>
-                                <td><a href="{{ url_for('viewActiveCampaigns') }}" class="btn btn-warning">View</a></td>
+                                <td width="35%">{{ request.campaign.sponsor.user.email }}</td>
+                                <td width="30%"><a href="#" class="btn btn-warning" data-toggle="modal" data-target="#campaignModal{{ request.campaign.campaign_id }}">View</a></td>
                             </tr>
                             {% endfor %}
                         </table>
@@ -61,12 +85,13 @@
                         <table class="table table-bordered">
                             {% for request in new_requests %}
                             <tr>
-                                <th width="70%">{{ request.campaign.title }}</th>
+                                <th width="30%">{{ request.campaign.title }}</th>
+                                <td width="30%">{{ request.campaign.sponsor.user.email }}</th>
                                 <td>
-                                    <form method="POST" action="{{ url_for('approveRequest', request_id=request.request_id) }}" style="display: inline-block;">
+                                    <form method="POST" action="{{ url_for('approveRequest', request_id=request.request_id) }}" style="display: inline;">
                                         <button type="submit" class="btn btn-success">Approve</button>
                                     </form>
-                                    <form method="POST" action="{{ url_for('rejectRequest', request_id=request.request_id) }}" style="display: inline-block;">
+                                    <form method="POST" action="{{ url_for('rejectRequest', request_id=request.request_id) }}" style="display: inline;">
                                         <button type="submit" class="btn btn-danger">Reject</button>
                                     </form>
                                 </td>
@@ -113,4 +138,34 @@
             </div>
         </div>
     </div>
+</div>
+
+
+<!-- Modal using bootstrap Made -->
+
+{% for request in approved_requests %}
+<div class="modal fade" id="campaignModal{{ request.campaign.campaign_id }}" tabindex="-1" role="dialog" aria-labelledby="campaignModalLabel{{ request.campaign.campaign_id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="campaignModalLabel{{ request.campaign.campaign_id }}">{{ request.campaign.title }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Description:</strong> {{ request.campaign.description }}</p>
+                <p><strong>Budget:</strong> ${{ request.campaign.budget }}</p>
+                <p><strong>Start Date:</strong> {{ request.campaign.start_date }}</p>
+                <p><strong>End Date:</strong> {{ request.campaign.end_date }}</p>
+                <p><strong>Status:</strong> {{ request.campaign.status }}</p>
+                <p><strong>Niche:</strong> {{ request.campaign.niche }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 </div>

@@ -1,9 +1,12 @@
 ## imports
 from flask import Flask, render_template, url_for, request, redirect, flash, session
 from datetime import timedelta
-from model import db, User, Influencer, Campaign, Request, Sponsor
-from helper import getUserInfo, influencerNeeded, sponsorNeeded
+from model import db, User, Influencer, Campaign, Request, Sponsor, BlacklistRequest
+from helper import getUserInfo
 from datetime import datetime
+import plotly.express as px
+
+
 
 ## object of flask
 app = Flask(__name__)
@@ -24,7 +27,7 @@ db.create_all()                ## creates the schema
 # @user_needed
 def index():
     current_user = getUserInfo() ## will return email and role
-    
+
     if current_user is None:
         return redirect(url_for('index_page'))
     else:
@@ -46,16 +49,32 @@ def home_page():
     isInfluencer = request.args.get('isInfluencer')
     isSponsor = request.args.get('isSponsor')
     user_id = request.args.get('usr_id')
-
+    print(isAdmin)
     nav_type = {
         'email': user_email,
-        'isAdmin': int(isAdmin.lower() == 'true'),  # Convert string to boolean
-        'isInfluencer': int(isInfluencer.lower() == 'true'),
-        'isSponsor': int(isSponsor.lower() == 'true'),
+        'isAdmin': int(isAdmin == 'True'),  
+        'isInfluencer': int(isInfluencer == 'True'),
+        'isSponsor': int(isSponsor == 'True'),
         'id': user_id
     }
-    return render_template('home.html', nav_type=nav_type)  # Render home.html with nav_type as current_user
+    # If the user is an admin, fetch additional statistics
+    if nav_type['isAdmin']:
+        total_users = User.query.count()
+        total_campaigns = Campaign.query.count()
+        active_campaigns = Campaign.query.filter_by(status='Active').count()
+        flagged_users = User.query.filter_by(isBlacklist=True).count()
 
+        total_influencers = User.query.filter_by(isInfluencer=True).count()
+        total_sponsors = User.query.filter_by(isSponsor=True).count()
+
+
+
+        return render_template('home.html', nav_type=nav_type, 
+                               total_users=total_users, 
+                               total_campaigns=total_campaigns, 
+                               active_campaigns=active_campaigns, 
+                               flagged_users=flagged_users)
+    return render_template('home.html', nav_type=nav_type)
 
 @app.route("/registration",methods = ['POST','GET'])
 def registration():
@@ -102,7 +121,7 @@ def registration():
         db.session.commit()
         flash("Registration Successful. Please Login to continue!",'success')
         
-        return render_template('registration.html', nav_type = user1)
+        return render_template('registration.html', nav_type = None)
     
     if request.method == 'GET':
         current_user = getUserInfo()
@@ -147,6 +166,16 @@ def logout():
 @app.route('/profile',methods =['GET','POST'])
 def profile():
     user = getUserInfo()
+
+    if user['isBlacklist']:
+        flash("You have been blacklisted and cannot access this page.", "danger")
+        return redirect(url_for('home_page',user_email=user['email'], 
+                            isAdmin=user['isAdmin'], 
+                            isInfluencer=user['isInfluencer'], 
+                            isSponsor=user['isSponsor'], 
+                            usr_id=user['usr_id']))
+    
+    
     ## check the authorization
     if 'id' not in session:
         return redirect(url_for('login'))
@@ -180,12 +209,13 @@ def profile():
             sponsor_approved=None  # Sponsor has not yet responded
         ).all()
 
+        total_earnings = sum(req.campaign.budget for req in approved_requests)
 
         return render_template('profile.html',  nav_type=user, 
                                                 approved_requests=approved_requests, 
                                                 new_requests=new_requests,
                                                 pending_requests=pending_requests,
-                                                rejected_requests=rejected_requests)
+                                                rejected_requests=rejected_requests, total_earnings= total_earnings)
                                             
     elif user.isSponsor:
         active_campaigns = Campaign.query.filter_by(sponsor_id=user.sponsor.sponsor_id,
@@ -212,13 +242,19 @@ def profile():
             ).join(Campaign).filter(
         Campaign.sponsor_id == user.sponsor.sponsor_id
             ).all()
-
+        
+        total_spend = sum(campaign.budget for campaign in active_campaigns)
+        approved_influencers = {}
+        for campaign in active_campaigns:
+            approved_influencers[campaign.campaign_id] = Request.query.filter_by(
+                                                            campaign_id=campaign.campaign_id,
+                                                            status='Approved').count()
         return render_template('profile.html',nav_type=user,
                                                 active_campaigns=active_campaigns,
                                                 past_campaigns=past_campaigns,
                                                 new_requests=new_requests,
                                                 pending_requests=pending_requests,
-                                                rejected_requests=rejected_requests)
+                                                rejected_requests=rejected_requests, total_spend=total_spend, approved_influencers=approved_influencers)
 
     elif user.isAdmin:
         return render_template('profile.html', nav_type=user)
@@ -229,9 +265,18 @@ def profile():
     
 
 @app.route('/findCampaigns',methods =['GET','POST'])
-@influencerNeeded()
 def findCampaigns():
     user = getUserInfo()
+
+    if user['isBlacklist']:
+        flash("You have been blacklisted and cannot access this page.", "danger")
+        return redirect(url_for('home_page',user_email=user['email'], 
+                            isAdmin=user['isAdmin'], 
+                            isInfluencer=user['isInfluencer'], 
+                            isSponsor=user['isSponsor'], 
+                            usr_id=user['usr_id']))
+
+
     if 'id' not in session:
         return redirect(url_for('login'))
     
@@ -247,6 +292,7 @@ def findCampaigns():
 
 @app.route('/campaignDetails/<int:campaign_id>')
 def campaignDetails(campaign_id):
+    
     if 'id' not in session:
         return redirect(url_for('login'))
     
@@ -254,8 +300,15 @@ def campaignDetails(campaign_id):
     if not campaign:
         flash("Campaign not found.", "danger")
         return redirect(url_for('availableCampaigns'))
+    
+    approved_influencers = db.session.query(Influencer).join(Request).filter(
+        Request.campaign_id == campaign_id,
+        Request.influencer_approved == True
+    ).all()
 
-    return render_template('campaign_details.html', campaign=campaign)
+    total_spend = len(approved_influencers) * float(campaign.budget)
+
+    return render_template('campaignDetails.html', campaign=campaign, approved_influencers=approved_influencers, total_spend= total_spend)
 
 
 
@@ -263,6 +316,15 @@ def campaignDetails(campaign_id):
 @app.route('/campaigns',methods =['GET','POST'])
 def campaigns():
     user = getUserInfo()
+
+    if user['isBlacklist']:
+        flash("You have been blacklisted and cannot access this page.", "danger")
+        return redirect(url_for('home_page',user_email=user['email'], 
+                            isAdmin=user['isAdmin'], 
+                            isInfluencer=user['isInfluencer'], 
+                            isSponsor=user['isSponsor'], 
+                            usr_id=user['usr_id']))
+
     ## check the authorization
     if 'id' not in session:
         return redirect(url_for('login'))
@@ -279,6 +341,14 @@ def campaigns():
 @app.route('/viewActiveCampaigns')
 def viewActiveCampaigns():
     user = getUserInfo()
+    
+    if user['isBlacklist']:
+        flash("You have been blacklisted and cannot access this page.", "danger")
+        return redirect(url_for('home_page',user_email=user['email'], 
+                            isAdmin=user['isAdmin'], 
+                            isInfluencer=user['isInfluencer'], 
+                            isSponsor=user['isSponsor'], 
+                            usr_id=user['usr_id']))
 
     return render_template('activeCampaigns.html', nav_type= None)
     
@@ -287,12 +357,21 @@ def viewActiveCampaigns():
 def createCampaign():
     user = getUserInfo()
 
+    if user['isBlacklist']:
+        flash("You have been blacklisted and cannot access this page.", "danger")
+        return redirect(url_for('home_page',user_email=user['email'], 
+                            isAdmin=user['isAdmin'], 
+                            isInfluencer=user['isInfluencer'], 
+                            isSponsor=user['isSponsor'], 
+                            usr_id=user['usr_id']))
+
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
         budget = request.form.get('budget')
         start_date = request.form.get('start_date')
         end_date = request.form.get('end_date')
+        niche = request.form.get('niche')
 
         start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
@@ -308,7 +387,8 @@ def createCampaign():
                 budget=budget,
                 start_date=start_date,
                 end_date=end_date,
-                status='Active' ## setting active as default
+                status='Active', ## setting active as default
+                niche= niche
             )
         
         db.session.add(new_campaign)
@@ -318,6 +398,29 @@ def createCampaign():
         return redirect(url_for('campaigns'))
 
     return render_template('createCampaign.html', nav_type=user)
+
+
+@app.route('/deleteCampaign/<int:campaign_id>', methods=['POST'])
+def sponsorDeleteCampaign(campaign_id):
+    if 'id' not in session:
+        return redirect(url_for('login'))
+    
+    user_id = session['id']
+    user = User.query.filter_by(id=user_id).first()
+
+    # Check if the user is a sponsor and owns the campaign
+    campaign = Campaign.query.filter_by(campaign_id=campaign_id, sponsor_id=user.sponsor.sponsor_id).first()
+
+    if not campaign:
+        flash("You don't have permission to delete this campaign or it doesn't exist.", "danger")
+        return redirect(url_for('campaigns'))
+
+    # Delete the campaign
+    db.session.delete(campaign)
+    db.session.commit()
+
+    flash("Campaign deleted successfully.", "success")
+    return redirect(url_for('campaigns'))
 
 
 @app.route('/campaignManagment/<int:campaign_id>', methods = ['GET', 'POST'])
@@ -345,6 +448,11 @@ def campaignManagement(campaign_id):
         campaign.budget = request.form.get('budget')
         campaign.start_date = datetime.strptime(request.form.get('start_date'),'%Y-%m-%d').date()
         campaign.end_date = datetime.strptime(request.form.get('end_date'),'%Y-%m-%d').date()
+
+        if campaign.end_date < datetime.today().date():
+            campaign.status = 'Inactive'
+        else:
+            campaign.status = 'Active' 
 
         db.session.commit()
 
@@ -420,7 +528,7 @@ def createRequest(campaign_id):
             db.session.commit()
 
             flash("Request for the influencer created successfully!", "success")
-            return redirect(url_for('campaignManagement', campaign_id=campaign_id))
+            return redirect(url_for('createRequest', campaign_id=campaign_id))
         
         return render_template('createRequest.html', campaign=campaign, influencers=available_influencers, nav_type=user, requested_influencers=requested_influencers)
 
@@ -489,6 +597,268 @@ def rejectRequest(request_id):
     flash("Request rejected successfully.", "success")
     return redirect(url_for('profile'))
 
+@app.route('/findInfluencer', methods=['GET', 'POST'])
+def findInfluencer():
+    user = getUserInfo()
+    if user['isBlacklist']:
+        flash("You have been blacklisted and cannot access this page.", "danger")
+        return redirect(url_for('home_page',user_email=user['email'], 
+                            isAdmin=user['isAdmin'], 
+                            isInfluencer=user['isInfluencer'], 
+                            isSponsor=user['isSponsor'], 
+                            usr_id=user['usr_id']))
+
+    if 'id' not in session:
+        return redirect(url_for('login'))
+    
+    user = User.query.filter_by(id=session['id']).first()
+
+    if user is None or not user.isSponsor:
+        flash("You do not have permission to access this page.", "danger")
+        return redirect(url_for('home_page'))
+    
+    influencers = Influencer.query.all()
+
+    return render_template('findInfluencer.html', influencers=influencers, nav_type=user)
+
+
+@app.route('/requestBlacklist/<int:influencer_id>', methods=['POST'])
+def requestBlacklist(influencer_id):
+    if 'id' not in session:
+        return redirect(url_for('login'))
+    
+    user = User.query.filter_by(id=session['id']).first()
+
+    if user is None or not user.isSponsor:
+        flash("You do not have permission to perform this action.", "danger")
+        return redirect(url_for('home_page'))
+
+    influencer = Influencer.query.filter_by(influencer_id=influencer_id).first()
+
+    if not influencer:
+        flash("Influencer not found.", "danger")
+        return redirect(url_for('findInfluencers'))
+
+    # Create a request for the admin to approve
+    new_request = BlacklistRequest(influencer_id=influencer_id, sponsor_id=user.id)
+    db.session.add(new_request)
+    db.session.commit()
+
+    flash("Blacklist request sent successfully!", "success")
+    return redirect(url_for('findInfluencer'))
+
+@app.route('/admin/manageUsers', methods=['GET', 'POST'])
+def adminManageUsers():
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(id=session['id']).first()
+
+    if user is None or not user.isAdmin:
+        flash("You do not have permission to access this page.", "danger")
+        return redirect(url_for('home_page'))
+
+    users = User.query.all()
+    return render_template('adminManageUsers.html', users=users, nav_type=user)
+
+
+@app.route('/admin/blacklistUser/<int:user_id>', methods=['POST'])
+def blacklistUser(user_id):
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(id=session['id']).first()
+
+    if user is None or not user.isAdmin:
+        flash("You do not have permission to perform this action.", "danger")
+        return redirect(url_for('home_page'))
+
+    user_to_blacklist = User.query.filter_by(id=user_id).first()
+
+    if user_to_blacklist:
+        user_to_blacklist.isBlacklist = True
+        db.session.commit()
+        flash("User has been blacklisted.", "success")
+    else:
+        flash("User not found.", "danger")
+
+    return redirect(url_for('adminManageUsers'))
+
+
+@app.route('/admin/deleteUser/<int:user_id>', methods=['POST'])
+def deleteUser(user_id):
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(id=session['id']).first()
+
+    if user is None or not user.isAdmin:
+        flash("You do not have permission to perform this action.", "danger")
+        return redirect(url_for('home_page'))
+
+    user_to_delete = User.query.filter_by(id=user_id).first()
+
+    if user_to_delete:
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        flash("User has been deleted.", "success")
+    else:
+        flash("User not found.", "danger")
+
+    return redirect(url_for('adminManageUsers'))
+
+@app.route('/admin/manageCampaigns', methods=['GET', 'POST'])
+def adminManageCampaigns():
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(id=session['id']).first()
+
+    if user is None or not user.isAdmin:
+        flash("You do not have permission to access this page.", "danger")
+        return redirect(url_for('home_page'))
+
+    campaigns = Campaign.query.all()
+    return render_template('adminManageCampaigns.html', campaigns=campaigns, nav_type=user)
+
+
+@app.route('/admin/deleteCampaign/<int:campaign_id>', methods=['POST'])
+def adminDeleteCampaign(campaign_id):
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(id=session['id']).first()
+
+    if user is None or not user.isAdmin:
+        flash("You do not have permission to perform this action.", "danger")
+        return redirect(url_for('home_page'))
+
+    campaign_to_delete = Campaign.query.filter_by(campaign_id=campaign_id).first()
+
+    if campaign_to_delete:
+        db.session.delete(campaign_to_delete)
+        db.session.commit()
+        flash("Campaign has been deleted.", "success")
+    else:
+        flash("Campaign not found.", "danger")
+
+    return redirect(url_for('adminManageCampaigns'))
+
+
+@app.route('/admin/deactivateCampaign/<int:campaign_id>', methods=['POST'])
+def deactivateCampaign(campaign_id):
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(id=session['id']).first()
+
+    if user is None or not user.isAdmin:
+        flash("You do not have permission to perform this action.", "danger")
+        return redirect(url_for('home_page'))
+
+    campaign_to_deactivate = Campaign.query.filter_by(campaign_id=campaign_id).first()
+
+    if campaign_to_deactivate:
+        campaign_to_deactivate.status = 'Inactive'
+        db.session.commit()
+        flash("Campaign has been deactivated.", "success")
+    else:
+        flash("Campaign not found.", "danger")
+
+    return redirect(url_for('adminManageCampaigns'))
+
+
+@app.route('/admin/whiteListUser/<int:user_id>', methods=['POST'])
+def whiteListUser(user_id):
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    user = User.query.filter_by(id=session['id']).first()
+
+    if user is None or not user.isAdmin:
+        flash("You do not have permission to perform this action.", "danger")
+        return redirect(url_for('home_page'))
+
+    userToWhitelist = User.query.filter_by(id=user_id).first()
+
+    if userToWhitelist:
+        userToWhitelist.isBlacklist = False
+        db.session.commit()
+        flash("User has been WhiteListed.", "success")
+    else:
+        flash("User not found.", "danger")
+
+    return redirect(url_for('adminManageUsers'))
+
+@app.route('/inactivateCampaign/<int:campaign_id>', methods=['POST'])
+def inactivateCampaign(campaign_id):
+    if 'id' not in session:
+        return redirect(url_for('login'))
+    
+    user_id = session['id']
+    user = User.query.filter_by(id=user_id).first()
+
+    # Check if the user is a sponsor and owns the campaign
+    campaign = Campaign.query.filter_by(campaign_id=campaign_id, sponsor_id=user.sponsor.sponsor_id).first()
+
+    if not campaign:
+        flash("You don't have permission to inactivate this campaign or it doesn't exist.", "danger")
+        return redirect(url_for('campaigns'))
+
+    # Inactivate the campaign
+    campaign.status = 'Inactive'
+    db.session.commit()
+
+    flash("Campaign inactivated successfully.", "success")
+    return redirect(url_for('campaigns'))
+
+## to edit the influencer and sponsor profile the name industry and category
+
+@app.route('/edit_influencer_profile', methods=['POST'])
+def edit_influencer_profile():
+    if 'id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['id']
+    user = User.query.filter_by(id=user_id).first()
+
+    if user and user.isInfluencer:
+        name = request.form.get('name')
+        category = request.form.get('category')
+
+        user.name = name
+        user.influencer.category = category
+        db.session.commit()
+
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for('profile'))
+    
+    flash("Unauthorized access.", "danger")
+    return redirect(url_for('login'))
+
+
+@app.route('/edit_sponsor_profile', methods=['POST'])
+def edit_sponsor_profile():
+    if 'id' not in session:
+        flash("Please login, you must be logged in", "danger")
+        return redirect(url_for('login'))
+
+    user_id = session['id']
+    user = User.query.filter_by(id=user_id).first()
+
+    if user and user.isSponsor:
+        name = request.form.get('name')
+        industry = request.form.get('industry')
+       
+        user.name = name
+        user.sponsor.industry = industry
+        db.session.commit()
+
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for('profile'))
+    
+    flash("Unauthorized access.", "danger")
+    return redirect(url_for('login'))
 
 
 if __name__ == "__main__": 

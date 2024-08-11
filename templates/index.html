@@ -1,24 +1,30 @@
-
-<!-- link between  layout.html and index.html-->
+<!-- link between layout.html and index.html-->
 {% extends './layouts/layout.html' %}
 
 {% block title %}
-  <title>Index</title>
+  <title>EpicCollaborate - Where Sponsors and Influencers Connect</title>
 {% endblock %}
-
 
 {% block body %}
 
   {% include './components/navbar.html' %}
   {% include './components/flash.html' %}
-  <h3>Welcome to the home page</h3>
-  {{ nav_type }}
 
+  <div class="container d-flex align-items-center justify-content-center" style="min-height: 50vh;">
+    <div class="text-center">
+      <h1>Welcome to EpicCollaborate</h1>
+      <p class="lead">Where Sponsors and Influencers Connect</p>
 
-  <p>
-    If you are new here, <a href="{{ url_for('registration') }}">click here to register</a>.
-    <br>
-    Already have an account? <a href="{{ url_for('login') }}">Click here to log in</a>.
-  </p>
+      {% if nav_type is none %}
+        <div class="alert alert-info">
+          <p>First time? Let’s get you started - <a href="{{ url_for('registration') }}" class="btn btn-primary">Register</a></p>
+          <p>Already with us? Login right here - <a href="{{ url_for('login') }}" class="btn btn-secondary">Log in</a></p>
+        </div>
+      {% else %}
+        <h3>Welcome back!</h3>
+        {{ nav_type.email }}
+      {% endif %}
+    </div>
+  </div>
 
 {% endblock %}

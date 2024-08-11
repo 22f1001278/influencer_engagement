@@ -1,30 +1,59 @@
 
 
-<div class="container mt-4">
+<div class="container">
     <h2>Manage Campaign</h2>
     <hr>
 
-    <form method="POST">
-        <div class="mb-3">
-            <label for="title" class="form-label">Campaign Title</label>
-            <input type="text" class="form-control" id="title" name="title" value="{{ campaign.title }}" required>
+    <form method="POST" id="CampaignManagement">
+
+        <div class="cmpManage">
+            <label for="title" >Campaign Title</label>
+            <input type="text" style="margin-left: 80px;" id="title" name="title" value="{{ campaign.title }}" required>
+        </div>    
+        <br>
+        <div class="cmpManage">
+            <label for="description" >Campaign Description</label>
+            <input  id="description" style="margin-left: 30px;" name="description" value="{{ campaign.description }}" rows="4" required />
         </div>
-        <div class="mb-3">
-            <label for="description" class="form-label">Campaign Description</label>
-            <textarea class="form-control" id="description" name="description" rows="4" required>{{ campaign.description }}</textarea>
+            <br>
+        <div class="cmpManage">
+            <label for="budget" >Budget</label>
+            <input type="number" style="margin-left: 138px;" id="budget" name="budget" value="{{ campaign.budget }}" required>
         </div>
-        <div class="mb-3">
-            <label for="budget" class="form-label">Budget</label>
-            <input type="number" class="form-control" id="budget" name="budget" value="{{ campaign.budget }}" required>
+        <br>
+        <div class="cmpManage">
+            <label for="start_date" >Start Date</label>
+            <input type="date" style="margin-left: 117px;" id="start_date" name="start_date" value="{{ campaign.start_date }}" required>
         </div>
-        <div class="mb-3">
-            <label for="start_date" class="form-label">Start Date</label>
-            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ campaign.start_date }}" required>
+        
+        <br>
+        
+        <div class="cmpManage">
+        <label for="end_date" >End Date</label>
+            <input type="date" style="margin-left: 122px;" id="end_date" name="end_date" value="{{ campaign.end_date }}" required>
         </div>
-        <div class="mb-3">
-            <label for="end_date" class="form-label">End Date</label>
-            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ campaign.end_date }}" required>
+        <br>
+
+        <div class="cmpManage">
+                <label for="niche" >Campaign Niche</label>
+            <select class="form-control" id="niche" style="margin-left: 30px;" name="niche" required>
+                <option value="">Select a Niche</option>
+                <option value="technology" {% if campaign.niche == 'technology' %}selected{% endif %}>Technology</option>
+                <option value="fashion" {% if campaign.niche == 'fashion' %}selected{% endif %}>Fashion</option>
+                <option value="health" {% if campaign.niche == 'health' %}selected{% endif %}>Health</option>
+                <option value="education" {% if campaign.niche == 'education' %}selected{% endif %}>Education</option>
+                <option value="entertainment" {% if campaign.niche == 'entertainment' %}selected{% endif %}>Entertainment</option>
+            </select>
         </div>
+        <br>
+
         <button type="submit" class="btn btn-primary">Update Campaign</button>
+        <form method="POST" action="{{ url_for('inactivateCampaign', campaign_id=campaign.campaign_id) }}" style="display: inline;">
+            <button type="submit" class="btn btn-danger">Inactivate Campaign</button>
+        </form>
+    
     </form>
+
+    
+    
 </div>

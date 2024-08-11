@@ -1,8 +1,7 @@
-<!-- link between  layout.html and index.html-->
 {% extends './layouts/layout.html' %}
 
 {% block title %}
-  <title>Create A New Campaign</title>
+  <title>Home</title>
 {% endblock %}
 
 
@@ -10,9 +9,7 @@
 
   {% include './components/navbar.html' %}
   {% include './components/flash.html' %}
-  <!-- {{ nav_type }} -->
-
-  {% include './components/sponsor/createCampaign.html' %}
-
-
+  
+  {% include './components/admin/adminDashboard.html' %}
+  
 {% endblock %}

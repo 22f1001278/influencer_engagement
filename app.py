@@ -4,8 +4,6 @@ from datetime import timedelta
 from model import db, User, Influencer, Campaign, Request, Sponsor, BlacklistRequest
 from helper import getUserInfo
 from datetime import datetime
-import plotly.express as px
-
 
 
 ## object of flask

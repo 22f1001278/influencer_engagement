@@ -38,11 +38,11 @@
                 <label for="niche" >Campaign Niche</label>
             <select class="form-control" id="niche" style="margin-left: 30px;" name="niche" required>
                 <option value="">Select a Niche</option>
-                <option value="technology" {% if campaign.niche == 'technology' %}selected{% endif %}>Technology</option>
-                <option value="fashion" {% if campaign.niche == 'fashion' %}selected{% endif %}>Fashion</option>
-                <option value="health" {% if campaign.niche == 'health' %}selected{% endif %}>Health</option>
-                <option value="education" {% if campaign.niche == 'education' %}selected{% endif %}>Education</option>
-                <option value="entertainment" {% if campaign.niche == 'entertainment' %}selected{% endif %}>Entertainment</option>
+                <option value="technology" {% if campaign.niche == 'technology' %}selected{% endif %}>technology</option>
+                <option value="education" {% if campaign.niche == 'education' %}selected{% endif %}>education</option>
+                <option value="health" {% if campaign.niche == 'health' %}selected{% endif %}>health</option>
+                <option value="animation" {% if campaign.niche == 'animation' %}selected{% endif %}>animation</option>
+                <option value="other" {% if campaign.niche == 'other' %}selected{% endif %}>other</option>
             </select>
         </div>
         <br>

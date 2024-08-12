@@ -41,17 +41,17 @@
                           </tr>
                         </table>
 
-                        <form method="POST" style="display: inline;" {{ url_for('edit_sponsor_profile') }}">
-                          <div class="form-group">
-                              <label for="name">Name:</label>
-                              <input type="text" class="form-control" id="name" name="name" value="{{ nav_type.sponsor.user.name }}" required>
-                          </div>
-                          <div class="form-group">
-                              <label for="industry">Industry:</label>
-                              <input type="text" class="form-control" id="industry" name="industry" value="{{ nav_type.sponsor.industry }}" required>
-                          </div>
-                          <button type="submit" class="btn btn-primary">Update</button>
-                      </form>
+                        <form method="POST" action="{{ url_for('edit_sponsor_profile') }}" style="display: inline;">
+                            <div class="form-group">
+                                <label for="name">Name:</label>
+                                <input type="text" class="form-control" id="name" name="name" value="{{ nav_type.sponsor.user.name }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="industry">Industry:</label>
+                                <input type="text" class="form-control" id="industry" name="industry" value="{{ nav_type.sponsor.industry }}" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -76,7 +76,7 @@
                     </div>
                 </div>
 
-                <!-- Past Campaigns Section -->
+                <!-- PAST CAMPAIGNS -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-transparent border-0">
                         <h3 class="mb-0">Past Campaigns</h3>
@@ -93,7 +93,7 @@
                     </div>
                 </div>
 
-                <!-- New Requests Section -->
+                <!-- NEW REQUESTS -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-transparent border-0">
                         <h3 class="mb-0">New Requests from Influencers</h3>
@@ -117,7 +117,7 @@
                     </div>
                 </div>
 
-                <!-- Pending Requests Section -->
+                <!-- PENDING -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-transparent border-0">
                         <h3 class="mb-0">Pending Requests Made by You</h3>
@@ -135,7 +135,7 @@
                     </div>
                 </div>
 
-                <!-- Rejected Requests Section -->
+                <!-- REJECT THE REQUESTS -->
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-transparent border-0">
                         <h3 class="mb-0">Rejected Requests</h3>

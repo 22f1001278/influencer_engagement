@@ -4,11 +4,7 @@ from datetime import timedelta
 from model import db, User, Influencer, Campaign, Request, Sponsor, BlacklistRequest
 from helper import getUserInfo
 from datetime import datetime
-import matplotlib.pyplot as plt
-import io
-import base64
 import plotly.express as px
-
 
 
 ## object of flask
@@ -26,8 +22,11 @@ db.init_app(app)             ## connection between app and model
 app.app_context().push()      ## enables operation
 db.create_all()                ## creates the schema
 
+
+################### INDEX &&& HOME ROUTES ####################################################
+
 @app.route("/")
-# @user_needed
+# @user_needed ## wrapper not working properly better use the dictionary here
 def index():
     current_user = getUserInfo() ## will return email and role
 
@@ -52,7 +51,7 @@ def home_page():
     isInfluencer = request.args.get('isInfluencer')
     isSponsor = request.args.get('isSponsor')
     user_id = request.args.get('usr_id')
-    print(isAdmin)
+    # print(isAdmin)
     nav_type = {
         'email': user_email,
         'isAdmin': int(isAdmin == 'True'),  
@@ -60,7 +59,8 @@ def home_page():
         'isSponsor': int(isSponsor == 'True'),
         'id': user_id
     }
-    # If the user is an admin, fetch additional statistics
+
+    # Getting additional statistics for the admin statistics page
     if nav_type['isAdmin']:
         total_users = User.query.count()
         total_campaigns = Campaign.query.count()
@@ -70,14 +70,9 @@ def home_page():
         total_influencers = User.query.filter_by(isInfluencer=True).count()
         total_sponsors = User.query.filter_by(isSponsor=True).count()
 
-        fig = px.bar(
-            x=['Influencers', 'Sponsors'], 
-            y=[total_influencers, total_sponsors], 
-            labels={'x':'User Type', 'y':'Count'},
-            title='Total Influencers vs Sponsors'
-        )
+        fig = px.bar( x=['Influencers', 'Sponsors'], y=[total_influencers, total_sponsors], 
+                        labels={'x':'User Type', 'y':'Count'}, title='Influencers vs Sponsors')
 
-        # Convert Plotly figure to HTML div string
         plot_html = fig.to_html(full_html=False)
 
         return render_template('home.html', nav_type=nav_type, 
@@ -87,6 +82,9 @@ def home_page():
                                flagged_users=flagged_users, img_data=plot_html)
     return render_template('home.html', nav_type=nav_type)
 
+
+
+#############  REGISTRATION && LOGIN ##########################################################
 @app.route("/registration",methods = ['POST','GET'])
 def registration():
     if request.method == 'POST':
@@ -163,7 +161,6 @@ def login():
             return render_template('index.html', nav_type = current_user)
     
     ## handling the GET method
-
     current_user = getUserInfo() ## will return email and role
     return render_template('login.html', nav_type=current_user )
 
@@ -174,10 +171,12 @@ def logout():
     return redirect(url_for('login'))
 
 
+
+############################# PROFILE = INFLUENCER &&& SPONSOR #############################################
 @app.route('/profile',methods =['GET','POST'])
 def profile():
     user = getUserInfo()
-
+    ## Not allowing the blacklisted user
     if user['isBlacklist']:
         flash("You have been blacklisted and cannot access this page.", "danger")
         return redirect(url_for('home_page',user_email=user['email'], 
@@ -185,7 +184,6 @@ def profile():
                             isInfluencer=user['isInfluencer'], 
                             isSponsor=user['isSponsor'], 
                             usr_id=user['usr_id']))
-    
     
     ## check the authorization
     if 'id' not in session:
@@ -201,71 +199,46 @@ def profile():
 
         active_campaigns = [req.campaign for req in approved_requests]
 
-        new_requests = Request.query.filter_by(
-            influencer_id=user.influencer.influencer_id,
-            status='Pending',
-            sponsor_approved=True,
-            influencer_approved=None  # Influencer has not yet responded
-        ).all()
+        new_requests = Request.query.filter_by(influencer_id=user.influencer.influencer_id,
+                                                status='Pending',sponsor_approved=True,influencer_approved=None).all()
 
         # Fetch rejected requests
-        rejected_requests = Request.query.filter_by(
-        influencer_id=user.influencer.influencer_id,
-        status='Rejected').all()
+        rejected_requests = Request.query.filter_by( influencer_id=user.influencer.influencer_id, status='Rejected').all()
 
         # Fetch pending requests where the sponsor has not yet approved
-        pending_requests = Request.query.filter_by(
-            influencer_id=user.influencer.influencer_id,
-            status='Pending',
-            sponsor_approved=None  # Sponsor has not yet responded
-        ).all()
+        pending_requests = Request.query.filter_by(influencer_id=user.influencer.influencer_id,
+                                                    status='Pending',
+                                                    sponsor_approved=None).all()
 
         total_earnings = sum(req.campaign.budget for req in approved_requests)
 
-        return render_template('profile.html',  nav_type=user, 
-                                                approved_requests=approved_requests, 
-                                                new_requests=new_requests,
-                                                pending_requests=pending_requests,
+        return render_template('profile.html',  nav_type=user, approved_requests=approved_requests, 
+                                                new_requests=new_requests, pending_requests=pending_requests,
                                                 rejected_requests=rejected_requests, total_earnings= total_earnings)
                                             
     elif user.isSponsor:
         active_campaigns = Campaign.query.filter_by(sponsor_id=user.sponsor.sponsor_id,
                                                     status='Active').all()
 
-        past_campaigns = Campaign.query.filter_by(
-            sponsor_id=user.sponsor.sponsor_id,
-            status='Inactive'
-        ).all()
+        past_campaigns = Campaign.query.filter_by(sponsor_id=user.sponsor.sponsor_id,
+                                                    status='Inactive').all()
 
-        new_requests = Request.query.join(Campaign).filter(
-            Campaign.sponsor_id == user.sponsor.sponsor_id,
-            Request.sponsor_approved == None).all()
+        new_requests = Request.query.join(Campaign).filter(Campaign.sponsor_id == user.sponsor.sponsor_id,
+                                                            Request.sponsor_approved == None).all()
 
-        pending_requests = Request.query.filter_by(
-        sponsor_approved=True,
-        influencer_approved=None  # Influencer has not yet responded
-                            ).join(Campaign).filter(
-                         Campaign.sponsor_id == user.sponsor.sponsor_id
-                ).all()
+        pending_requests = Request.query.filter_by(sponsor_approved=True, influencer_approved=None).join(Campaign).filter(
+                                                    Campaign.sponsor_id == user.sponsor.sponsor_id).all()
 
-        rejected_requests = Request.query.filter_by(
-        influencer_approved=False
-            ).join(Campaign).filter(
-        Campaign.sponsor_id == user.sponsor.sponsor_id
-            ).all()
+        rejected_requests = Request.query.filter_by(influencer_approved=False).join(Campaign).filter(Campaign.sponsor_id == user.sponsor.sponsor_id).all()
         
         total_spend = sum(campaign.budget for campaign in active_campaigns)
         approved_influencers = {}
         for campaign in active_campaigns:
-            approved_influencers[campaign.campaign_id] = Request.query.filter_by(
-                                                            campaign_id=campaign.campaign_id,
-                                                            status='Approved').count()
-        return render_template('profile.html',nav_type=user,
-                                                active_campaigns=active_campaigns,
-                                                past_campaigns=past_campaigns,
-                                                new_requests=new_requests,
-                                                pending_requests=pending_requests,
-                                                rejected_requests=rejected_requests, total_spend=total_spend, approved_influencers=approved_influencers)
+            approved_influencers[campaign.campaign_id] = Request.query.filter_by(campaign_id=campaign.campaign_id, status='Approved').count()
+        return render_template('profile.html',nav_type=user,active_campaigns=active_campaigns,
+                                                past_campaigns=past_campaigns,new_requests=new_requests,
+                                                pending_requests=pending_requests,rejected_requests=rejected_requests, total_spend=total_spend, 
+                                                approved_influencers=approved_influencers)
 
     elif user.isAdmin:
         return render_template('profile.html', nav_type=user)
@@ -275,6 +248,8 @@ def profile():
         return redirect(url_for('login'))
     
 
+
+############################## Find Camapigns for the influencer #################################################################################
 @app.route('/findCampaigns',methods =['GET','POST'])
 def findCampaigns():
     user = getUserInfo()
@@ -282,10 +257,10 @@ def findCampaigns():
     if user['isBlacklist']:
         flash("You have been blacklisted and cannot access this page.", "danger")
         return redirect(url_for('home_page',user_email=user['email'], 
-                            isAdmin=user['isAdmin'], 
-                            isInfluencer=user['isInfluencer'], 
-                            isSponsor=user['isSponsor'], 
-                            usr_id=user['usr_id']))
+                                            isAdmin=user['isAdmin'], 
+                                            isInfluencer=user['isInfluencer'], 
+                                            isSponsor=user['isSponsor'], 
+                                            usr_id=user['usr_id']))
 
 
     if 'id' not in session:
@@ -312,10 +287,7 @@ def campaignDetails(campaign_id):
         flash("Campaign not found.", "danger")
         return redirect(url_for('availableCampaigns'))
     
-    approved_influencers = db.session.query(Influencer).join(Request).filter(
-        Request.campaign_id == campaign_id,
-        Request.influencer_approved == True
-    ).all()
+    approved_influencers = db.session.query(Influencer).join(Request).filter(Request.campaign_id == campaign_id, Request.influencer_approved == True).all()
 
     total_spend = len(approved_influencers) * float(campaign.budget)
 
@@ -323,7 +295,7 @@ def campaignDetails(campaign_id):
 
 
 
-
+############################## campaigns Sponsor ######################################################################################
 @app.route('/campaigns',methods =['GET','POST'])
 def campaigns():
     user = getUserInfo()
@@ -348,6 +320,8 @@ def campaigns():
     campaigns = Campaign.query.filter_by(sponsor_id=user.id).all()
     
     return render_template('campaigns.html', nav_type=user, campaigns = campaigns)
+
+
 
 @app.route('/viewActiveCampaigns')
 def viewActiveCampaigns():
@@ -391,16 +365,10 @@ def createCampaign():
                 flash('All fields are required.', 'danger')
                 return redirect(url_for('createCampaign'))
 
-        new_campaign = Campaign(
-                sponsor_id=user['usr_id'], 
-                title=title,
-                description=description,
-                budget=budget,
-                start_date=start_date,
-                end_date=end_date,
-                status='Active', ## setting active as default
-                niche= niche
-            )
+        new_campaign = Campaign(sponsor_id=user['usr_id'], title=title,description=description,
+                                budget=budget,start_date=start_date,end_date=end_date,
+                                status='Active', #### setting active as default
+                                niche= niche)
         
         db.session.add(new_campaign)
         db.session.commit()
@@ -426,7 +394,7 @@ def sponsorDeleteCampaign(campaign_id):
         flash("You don't have permission to delete this campaign or it doesn't exist.", "danger")
         return redirect(url_for('campaigns'))
 
-    # Delete the campaign
+    #### Delete the campaign
     db.session.delete(campaign)
     db.session.commit()
 
@@ -460,6 +428,7 @@ def campaignManagement(campaign_id):
         campaign.start_date = datetime.strptime(request.form.get('start_date'),'%Y-%m-%d').date()
         campaign.end_date = datetime.strptime(request.form.get('end_date'),'%Y-%m-%d').date()
 
+        ##### Resolved the inactive campaigns issue
         if campaign.end_date < datetime.today().date():
             campaign.status = 'Inactive'
         else:
@@ -501,16 +470,11 @@ def createRequest(campaign_id):
         if existing_request:
             flash("You have already requested participation in this campaign.", "danger")
             return redirect(url_for('findCampaigns'))
-        print('outsidePost')
+        # print('outsidePost')
         if request.method == 'GET':
             print('insidePost')
-            new_request = Request(
-                campaign_id=campaign_id, 
-                influencer_id=user.influencer.influencer_id, 
-                initiated_by_influencer=True,
-                influencer_approved = True,
-                status='Pending'
-            )
+            new_request = Request(campaign_id=campaign_id, influencer_id=user.influencer.influencer_id, initiated_by_influencer=True,
+                                    influencer_approved = True, status='Pending')
             db.session.add(new_request)
             db.session.commit()
 
@@ -528,13 +492,8 @@ def createRequest(campaign_id):
                 flash("You have already requested this influencer for this campaign.", "danger")
                 return redirect(url_for('createRequest', campaign_id=campaign_id))
 
-            new_request = Request(
-                campaign_id=campaign_id, 
-                influencer_id=influencer_id, 
-                initiated_by_influencer=False,
-                sponsor_approved = True,
-                status='Pending'
-            )
+            new_request = Request(campaign_id=campaign_id, influencer_id=influencer_id, initiated_by_influencer=False,
+                                    sponsor_approved = True,status='Pending')
             db.session.add(new_request)
             db.session.commit()
 
@@ -575,7 +534,6 @@ def approveRequest(request_id):
         request.status = 'Rejected'
 
     db.session.commit()
-
     flash("Request approved successfully!", "success")
     return redirect(url_for('profile'))
 
@@ -585,7 +543,6 @@ def rejectRequest(request_id):
     
     if 'id' not in session:
         return redirect(url_for('login'))
-    
     request = Request.query.get(request_id)
     
     if not request:
@@ -602,7 +559,6 @@ def rejectRequest(request_id):
 
     # Update request status based on rejections
     request.status = 'Rejected'
-
     db.session.commit()
 
     flash("Request rejected successfully.", "success")
@@ -613,11 +569,9 @@ def findInfluencer():
     user = getUserInfo()
     if user['isBlacklist']:
         flash("You have been blacklisted and cannot access this page.", "danger")
-        return redirect(url_for('home_page',user_email=user['email'], 
-                            isAdmin=user['isAdmin'], 
-                            isInfluencer=user['isInfluencer'], 
-                            isSponsor=user['isSponsor'], 
-                            usr_id=user['usr_id']))
+        return redirect(url_for('home_page',user_email=user['email'], isAdmin=user['isAdmin'], 
+                                                                    isInfluencer=user['isInfluencer'], 
+                                                                    isSponsor=user['isSponsor'], usr_id=user['usr_id']))
 
     if 'id' not in session:
         return redirect(url_for('login'))
@@ -629,10 +583,9 @@ def findInfluencer():
         return redirect(url_for('home_page'))
     
     influencers = Influencer.query.all()
-
     return render_template('findInfluencer.html', influencers=influencers, nav_type=user)
 
-
+###################### requestBlacklist Functionality Pending #####################################################
 @app.route('/requestBlacklist/<int:influencer_id>', methods=['POST'])
 def requestBlacklist(influencer_id):
     if 'id' not in session:
@@ -658,6 +611,8 @@ def requestBlacklist(influencer_id):
     flash("Blacklist request sent successfully!", "success")
     return redirect(url_for('findInfluencer'))
 
+
+############################################## ADMIN ##########################################################
 @app.route('/admin/manageUsers', methods=['GET', 'POST'])
 def adminManageUsers():
     if 'id' not in session:
@@ -778,7 +733,7 @@ def deactivateCampaign(campaign_id):
 
     return redirect(url_for('adminManageCampaigns'))
 
-
+## whitelist functionality added done- working
 @app.route('/admin/whiteListUser/<int:user_id>', methods=['POST'])
 def whiteListUser(user_id):
     if 'id' not in session:
@@ -798,7 +753,6 @@ def whiteListUser(user_id):
         flash("User has been WhiteListed.", "success")
     else:
         flash("User not found.", "danger")
-
     return redirect(url_for('adminManageUsers'))
 
 @app.route('/inactivateCampaign/<int:campaign_id>', methods=['POST'])
@@ -823,8 +777,7 @@ def inactivateCampaign(campaign_id):
     flash("Campaign inactivated successfully.", "success")
     return redirect(url_for('campaigns'))
 
-## to edit the influencer and sponsor profile the name industry and category
-
+##################################### PROFILE EDITS ##################################################################
 @app.route('/edit_influencer_profile', methods=['POST'])
 def edit_influencer_profile():
     if 'id' not in session:
@@ -856,11 +809,10 @@ def edit_sponsor_profile():
 
     user_id = session['id']
     user = User.query.filter_by(id=user_id).first()
-
+    print(user)
     if user and user.isSponsor:
         name = request.form.get('name')
         industry = request.form.get('industry')
-       
         user.name = name
         user.sponsor.industry = industry
         db.session.commit()

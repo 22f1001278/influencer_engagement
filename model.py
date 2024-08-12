@@ -63,10 +63,10 @@ class Request(db.Model):
     request_id = db.Column(db.Integer, primary_key=True)
     campaign_id = db.Column(db.Integer, db.ForeignKey('campaign.campaign_id'), nullable=False)
     influencer_id = db.Column(db.Integer, db.ForeignKey('influencer.influencer_id'), nullable=False)
-    initiated_by_influencer = db.Column(db.Boolean, nullable=False)  # True if influencer initiated, False if sponsor initiated
-    influencer_approved = db.Column(db.Boolean, nullable=True)  # None means pending, True means approved, False means rejected
-    sponsor_approved = db.Column(db.Boolean, nullable=True)  # None means pending, True means approved, False means rejected
-    status = db.Column(db.String, nullable=False, default='Pending')  # Status could be 'Pending', 'Approved', 'Rejected'
+    initiated_by_influencer = db.Column(db.Boolean, nullable=False)
+    influencer_approved = db.Column(db.Boolean, nullable=True)  
+    sponsor_approved = db.Column(db.Boolean, nullable=True)  
+    status = db.Column(db.String, nullable=False, default='Pending')  
 
     campaign = db.relationship('Campaign', back_populates='requests')
     influencer = db.relationship('Influencer', back_populates='requests')
@@ -77,7 +77,7 @@ class BlacklistRequest(db.Model):
     request_id = db.Column(db.Integer, primary_key=True)
     influencer_id = db.Column(db.Integer, db.ForeignKey('influencer.influencer_id'), nullable=False)
     sponsor_id = db.Column(db.Integer, db.ForeignKey('sponsor.sponsor_id'), nullable=False)
-    approved = db.Column(db.Boolean, default=None)  # None means pending, True means approved, False means rejected
+    approved = db.Column(db.Boolean, default=None) 
     
     influencer = db.relationship('Influencer', back_populates='blacklist_requests')
     sponsor = db.relationship('Sponsor', back_populates='blacklist_requests')

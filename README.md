@@ -31,38 +31,6 @@ EpicCollaborate is a platform designed to connect Sponsors and Influencers, enab
   - SQLite
   - Plotly Express
 
-## Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/your-repo/epiccollaborate.git
-   ```
-
-2. Navigate to the project directory:
-
-   ```bash
-   cd epiccollaborate
-   ```
-
-3. Install the required dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Set up the database:
-
-   ```bash
-   python setup_db.py
-   ```
-
-5. Run the application:
-
-   ```bash
-   python app.py
-   ```
-
 ## Usage
 
 - Access the application at `http://localhost:5000`.
